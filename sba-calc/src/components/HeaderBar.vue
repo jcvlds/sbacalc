@@ -12,7 +12,7 @@
           class="shrink mt-1 hidden-sm-and-down"
           contain
           min-width="100"
-          src="@/assets/hco-logo.svg"
+          src="https://www.hcoadvisors.com/hubfs/CR%20FIles/hco-logo.svg"
           transition="scale-transition"
           width="150"
         />

@@ -5,6 +5,7 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 
 Vue.config.productionTip = false
+Vue.prototype.$scrollTo = (x, y) => window.scrollTo(x, y)
 
 new Vue({
   router,

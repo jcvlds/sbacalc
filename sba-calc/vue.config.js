@@ -4,5 +4,10 @@ module.exports = {
   ],
   devServer: {
     host: 'localhost'
+  },
+  configureWebpack: {
+    optimization: {
+      splitChunks: false
+    }
   }
 }
