@@ -194,7 +194,7 @@
                   ref="wageFocus"
                   v-on="on"
                   @keyup="formatWage(wageReduction)"
-                  @keyup.enter="validate(); snackbar = !snackbar"
+                  @keyup.enter="validate();"
                   outlined
                   clearable
                   :rules="[v => !!v || 'Loan amount is required']"
@@ -234,7 +234,7 @@
               color="success"
               class="mr-4"
               rounded
-              @click="validate(); snackbar = !snackbar;"
+              @click="validate();"
               > Calculate </v-btn>
 
               <v-snackbar
@@ -407,6 +407,8 @@ export default {
 
       this.repaidNow = Math.round(this.loan.replace(/,/g,'') - this.forgiven - this.repaid) // eslint-disable-line
       this.repaidNowResult = this.toCurrency(this.repaidNow)
+
+      this.snackbar = !this.snackbar
     },
     reset () {
       this.$refs.form.reset()

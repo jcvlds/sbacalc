@@ -45,7 +45,7 @@
               color="success"
               class=""
               rounded
-              @click="login(); snackbar = !snackbar;"
+              @click="login();"
               > Login
             </v-btn>
           </v-col></v-row>
@@ -114,26 +114,29 @@ export default {
         // dispatch token and user to $store > router push to calc
         // this.$store.dispatch('setToken', response.data.token)
         // this.$store.dispatch('setUser', response.data.uid)
-        console.log(response.data.data.uid)
-        const user = {
-          uid: response.headers.uid,
-          client: response.headers.client,
-          'access-token': response.headers['access-token']
-        }
-        const sessionUser = JSON.stringify(user)
-        this.$store.dispatch('setUser', response.data.data.uid)
-        // sessionStorage.setItem('uid', response.data.data.uid)
-        sessionStorage.setItem('user', sessionUser)
-        this.$store.dispatch('setToken', response.headers['access-token'])
-        // sessionStorage.setItem('access-token', response.headers['access-token'])
-        this.$store.dispatch('setClient', response.headers.client)
-        // sessionStorage.setItem('client', response.headers.client)
-        this.$store.dispatch('setCompany', response.data.data.company_name)
-        this.$store.dispatch('setLoanAmt', response.data.data.ppp_loan_amount)
+        if (response) {
+          this.snackbar = !this.snackbar
+          console.log(response.data.data.uid)
+          const user = {
+            uid: response.headers.uid,
+            client: response.headers.client,
+            'access-token': response.headers['access-token']
+          }
+          const sessionUser = JSON.stringify(user)
+          this.$store.dispatch('setUser', response.data.data.uid)
+          // sessionStorage.setItem('uid', response.data.data.uid)
+          sessionStorage.setItem('user', sessionUser)
+          this.$store.dispatch('setToken', response.headers['access-token'])
+          // sessionStorage.setItem('access-token', response.headers['access-token'])
+          this.$store.dispatch('setClient', response.headers.client)
+          // sessionStorage.setItem('client', response.headers.client)
+          this.$store.dispatch('setCompany', response.data.data.company_name)
+          this.$store.dispatch('setLoanAmt', response.data.data.ppp_loan_amount)
 
-        this.$router.push({
-          name: 'Calc'
-        })
+          this.$router.push({
+            name: 'Calc'
+          })
+        }
       } catch (error) {
         // catch server errors
         this.error = error.response.data.error

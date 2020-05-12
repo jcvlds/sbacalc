@@ -84,7 +84,7 @@
             :rules="[v => !!v || 'PPP Loan is required']"
             prefix="$"
             @keyup="formatLoan(pppLoanAmt)"
-            @keyup.enter="register(); snackbar = !snackbar"
+            @keyup.enter="register();"
             >
           </v-text-field>
           </v-col></v-row>
@@ -95,7 +95,7 @@
               color="success"
               class=""
               rounded
-              @click="register(); snackbar = !snackbar;"
+              @click="register();;"
               > Register
             </v-btn>
           </v-col></v-row>
@@ -173,6 +173,7 @@ export default {
         // this.$store.dispatch('setUser', response.data.uid)
 
         if (response) {
+          this.snackbar = !this.snackbar
           const login = await AuthenticationService.login({
             email: this.email,
             password: this.password
