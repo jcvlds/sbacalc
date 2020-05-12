@@ -1,21 +1,27 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-// import About from '../views/About.vue'
+// import About from '../views/Signup.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
-    name: 'Home',
+    path: '/calc',
+    name: 'Calc',
     component: Home
   },
   {
-    path: '/about',
-    name: 'About',
-    // component: About
-    component: () => import('../views/About.vue')
+    path: '/',
+    name: 'Signup',
+    // component: Signup
+    component: () => import('@/views/Signup.vue')
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    // component: Login
+    component: () => import('@/views/Login.vue')
   }
 ]
 

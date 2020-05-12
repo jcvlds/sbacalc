@@ -1,8 +1,10 @@
 <template>
+<!-- @mouseenter="check()" -->
   <v-container>
     <v-snackbar
       v-model="infoSnackbar"
       :timeout="infoTO"
+      @mouseenter="check()"
       top
       color="info"
       class="text-center"
@@ -12,11 +14,21 @@
       <v-btn
         color="white"
         text
-        @click="infoSnackbar = !infoSnackbar"
+        @click="infoSnackbar = !infoSnackbar; check()"
       >
         X
       </v-btn>
     </v-snackbar>
+    <div v-if="company" class="mb-5 d-flex display-1
+      font-weight-black text-uppercase
+      justify-center mt-n7 mb-2">
+      <div>{{ titleCase(company) }}</div>
+    </div>
+    <div v-if="company" class="accent--text d-flex subtitle
+      font-weight-medium font-italic text-uppercase
+      justify-center mt-n7 mb-2">
+      <div class="mt-1 accent--text">Portal <v-icon class="accent--text">mdi-folder-multiple-outline</v-icon> </div>
+    </div>
 
     <v-card raised shaped outlined class="d-flex px-10 pt-3" id="top" ref="top">
       <v-row class="text-center" justify="center">
@@ -265,7 +277,17 @@
           <v-text-field
               v-model="repaidResult"
               form="form"
-              label="Loan amt. not forgiven (must be repaid)"
+              label="Loan amt. not forgiven (converted to loan)"
+              filled
+              class="center-input red-text"
+              readonly
+              >
+          </v-text-field>
+
+          <v-text-field
+              v-model="repaidNowResult"
+              form="form"
+              label="Remaining loan portion to be repaid immediately"
               filled
               class="center-input red-text"
               readonly
@@ -282,10 +304,12 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
   name: 'Calc',
 
   data: () => ({
+    // isUserLoggedIn: false,
     valid: true,
     snackbar: false,
     infoSnackbar: true,
@@ -312,9 +336,38 @@ export default {
     forgiven: '',
     forgivenResult: '',
     repaid: '',
-    repaidResult: ''
+    repaidResult: '',
+    repaidNow: '',
+    repaidNowResult: ''
   }),
+  computed: {
+    ...mapState([
+      'isUserLoggedIn', 'user', 'company', 'loanAmt'
+    ])
+  },
+  mounted () {
+    this.check()
+  },
   methods: {
+    titleCase (str) {
+      var splitStr = str.toLowerCase().split(' ')
+      for (var i = 0; i < splitStr.length; i++) {
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1)
+      }
+      return splitStr.join(' ')
+    },
+    check () {
+      // console.log(this.isUserLoggedIn)
+      if (!this.isUserLoggedIn) {
+        this.$router.push({
+          name: 'Login'
+        })
+      }
+      if (this.loanAmt) {
+        // this.formatLoan(toString(this.loanAmt))
+        this.loan = this.toLocale(this.loanAmt)
+      }
+    },
     validate () {
       const coord = this.$refs.top.offsetTop
       this.$scrollTo(0, coord)
@@ -324,7 +377,7 @@ export default {
       // this.totalNonPayrollResult = `$ ${this.totalNonPayroll}`
       this.totalNonPayrollResult = this.toCurrency(this.totalNonPayroll)
 
-      if ((parseInt(this.payroll.replace(/,/g,'')) / 0.75) > (parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll))) { // eslint-disable-line
+      if ((parseInt(this.payroll.replace(/,/g,'')) / 0.75) >= (parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll))) { // eslint-disable-line
         this.maxForgivable = Math.round(parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll)) // eslint-disable-line
         // this.maxForgivableResult = `$ ${this.maxForgivable}`
         this.maxForgivableResult = this.toCurrency(this.maxForgivable)
@@ -334,7 +387,8 @@ export default {
         this.maxForgivableResult = this.toCurrency(this.maxForgivable)
       }
 
-      this.ftePenalty = (-1 * parseFloat(this.fteReduction / 100)) * (parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll)) // eslint-disable-line
+      this.ftePenalty = -1 * (parseFloat(this.fteReduction / 100)) * (parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll)) // eslint-disable-line
+      console.log(this.ftePenalty)
       this.wagePenalty = -1 * parseInt(this.wageReduction.replace(/,/g,'')) // eslint-disable-line
 
       if ((this.maxForgivable + this.ftePenalty + this.wagePenalty) < this.loan.replace(/,/g,'')) { // eslint-disable-line
@@ -346,9 +400,13 @@ export default {
         // this.forgivenResult = `$ ${this.forgiven}`
         this.forgivenResult = this.toCurrency(this.forgiven)
       }
-      this.repaid = Math.round(this.loan.replace(/,/g,'') - this.forgiven) // eslint-disable-line
+      // this.repaid = Math.round(this.loan.replace(/,/g,'') - this.forgiven) // eslint-disable-line
+      this.repaid = Math.round(-1 * (this.wagePenalty + this.ftePenalty)) // eslint-disable-line
       // this.repaidResult = `$ ${this.repaid}`
       this.repaidResult = this.toCurrency(this.repaid)
+
+      this.repaidNow = Math.round(this.loan.replace(/,/g,'') - this.forgiven - this.repaid) // eslint-disable-line
+      this.repaidNowResult = this.toCurrency(this.repaidNow)
     },
     reset () {
       this.$refs.form.reset()
