@@ -176,7 +176,6 @@
                         <v-text-field v-model="fteCoveredWeeks"
                           label="Monthly FTEs during covered period (8 weeks subsequent of receiving the loan)*"
                           required clearable
-                          hint="Please note the calculator will not work if employees increased during covered period"
                           @keyup.enter="saveDialog();dialog = false"></v-text-field>
                       </v-col>
                       </v-row>
@@ -213,20 +212,21 @@
         </v-col>
 
         <v-col cols="12" md="4">
-        <!-- <v-tooltip top>
+        <v-tooltip top>
           <template v-slot:activator="{ on }">
           <v-text-field
               v-model="maxForgivableResult"
               v-on="on"
               form="form"
-              label="Forgiveness floor (total spent on eligible expenses)"
+              label="Forgiveness floor (payroll 75% test)"
               filled
               class="center-input"
               readonly
               >
           </v-text-field>
           </template>
-        </v-tooltip> -->
+            <span>First step is ensuring that 75% of eligible costs are used on payroll. If payroll costs for covered period are less than 75%, forgiveness floor is payroll divided by .75</span>
+        </v-tooltip>
 
           <v-text-field
               v-model="totalNonPayrollResult"
@@ -248,7 +248,7 @@
               >
           </v-text-field>
 
-          <div class="d-flex justify-center" style="margin-top: 24em">
+          <div class="d-flex justify-center" style="margin-top: 19em">
             <v-btn
               :disabled="!valid"
               color="success"
@@ -316,7 +316,7 @@
               >
           </v-text-field>
 
-          <span class="text-left font-weight-bold" style="font-size:14px">At H&CO, we have put together a comprehensive advisory service dedicated to offering PPP Loan Forgiveness Support & Claim Consulting- including representation in the case of an audit and assistance with all the certifications required. <br><a class="secondary--text" href="https://www.hcoadvisors.com/e2t/c/*W4mksf88j-G3SW1ZZ6W921KVwf0/*W1C_4BD42WNkJW7-bM302tNhdg0/5/f18dQhb0Sjvg8XJ9RdN8BDSZTHbqG6W1yfnKS1PT-3BW7sR9j51vkZ1yW1L5k957r5ct_W2PgXz47xR9NRW2NB2NV1L2pdnW7x1PCR7KXGVwW7v4ryx2Sx7L5W1Klx4k1Fn1xGW6yyrrQ58zYp9W1GmwJ37vPVHQW7w4nLl2ZSLjDW64QZb68rvGVnVnK2zp7MXmzFN3bqvN6RFkK4W5G18Kh3y9KYQW3dgtM72-wy9KVDNkrQ3JrVtRW16nLpJ8zn4LpVTbdpH3N51DyW5DFYjr5vbh2VW3mG8KL3KpmXFW5XT0lj8FhF8kW3TjwyT8pB-pDW5sSSsN2ZD8L7W8rCsGH3hMnqwW8nxbNK5jYkdSW8jLqvW8ytQMYW5M-kqb8HggnSVDqp3z3kljNCN3Vksd5sz5QsW64TYqt4Pw1VkN2sbPxnqT_DsW3SWFN83sqfpWW6nkYwS4WHDbRW30Hpx6136BRPW9hy-5f7hG9_2V56lMg16FxdjW7FLVTk89sypyW1HphJz7D7HVgW1Dy_KC21VGZff2H2jd804" target="_blank">Visit our PPP Loan Forgiveness Site</a> to learn more and request a quote.</span>
+          <span class="overline text-left font-weight-black">At H&CO, we have put together a comprehensive advisory service dedicated to offering PPP Loan Forgiveness Support & Claim Consulting- including representation in the case of an audit and assistance with all the certifications required. <a class="secondary--text" href="https://www.hcoadvisors.com/e2t/c/*W4mksf88j-G3SW1ZZ6W921KVwf0/*W1C_4BD42WNkJW7-bM302tNhdg0/5/f18dQhb0Sjvg8XJ9RdN8BDSZTHbqG6W1yfnKS1PT-3BW7sR9j51vkZ1yW1L5k957r5ct_W2PgXz47xR9NRW2NB2NV1L2pdnW7x1PCR7KXGVwW7v4ryx2Sx7L5W1Klx4k1Fn1xGW6yyrrQ58zYp9W1GmwJ37vPVHQW7w4nLl2ZSLjDW64QZb68rvGVnVnK2zp7MXmzFN3bqvN6RFkK4W5G18Kh3y9KYQW3dgtM72-wy9KVDNkrQ3JrVtRW16nLpJ8zn4LpVTbdpH3N51DyW5DFYjr5vbh2VW3mG8KL3KpmXFW5XT0lj8FhF8kW3TjwyT8pB-pDW5sSSsN2ZD8L7W8rCsGH3hMnqwW8nxbNK5jYkdSW8jLqvW8ytQMYW5M-kqb8HggnSVDqp3z3kljNCN3Vksd5sz5QsW64TYqt4Pw1VkN2sbPxnqT_DsW3SWFN83sqfpWW6nkYwS4WHDbRW30Hpx6136BRPW9hy-5f7hG9_2V56lMg16FxdjW7FLVTk89sypyW1HphJz7D7HVgW1Dy_KC21VGZff2H2jd804" target="_blank">Visit our PPP Loan Forgiveness Site</a> to learn more and request a quote.</span>
           <h3 style="margin-top:5em">Additional Resources:</h3><a href="https://home.treasury.gov/system/files/136/Paycheck-Protection-Program-Frequently-Asked-Questions.pdf">Treasury - Frequently Asked Questions</a>
           <br> <a href="https://home.treasury.gov/policy-issues/cares/assistance-for-small-businesses">Treasury - Current Rules & Information</a>
         </v-col>
@@ -354,8 +354,6 @@ export default {
     totalNonPayrollResult: '',
     maxForgivable: '',
     maxForgivableResult: '',
-    payrollReduction: '',
-    payrollReductionResult: '',
     totalReductions: '',
     totalReductionsResult: '',
     ftePenalty: '',
@@ -374,7 +372,7 @@ export default {
     ])
   },
   mounted () {
-    this.check()
+    // this.check()
   },
   methods: {
     titleCase (str) {
@@ -424,41 +422,25 @@ export default {
       // console.log(this.ftePenalty)
       this.wagePenalty = -1 * parseInt(this.wageReduction.replace(/,/g,'')) // eslint-disable-line
 
-      this.totalSpent = parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll) // eslint-disable-line
-      console.log(this.totalSpent)
-
-      const percent = parseInt(this.payroll.replace(/,/g,'')) / this.totalSpent // eslint-disable-line
-      if (percent >= .75) { // eslint-disable-line
-        this.payrollReduction = 0
-        this.payrollReductionResult = this.toCurrency(this.payrollReduction)
-      } else {
-        this.payrollReduction = (-1 * (parseInt(this.payroll.replace(/,/g,'') / .75) - this.totalSpent)) // eslint-disable-line
-        this.payrollReductionResult = this.toCurrency(this.payrollReduction)
-      }
-      console.log('percent ', percent)
-      console.log('payroll reduction ', this.payrollReduction)
-      // this.totalReductions = Math.round(parseInt(this.ftePenalty) + parseInt(this.wagePenalty) + (parseInt(this.loan.replace(/,/g,'') - parseInt(this.maxForgivable)))) // eslint-disable-line
-      this.totalReductions = Math.round(parseInt(this.ftePenalty) + parseInt(this.wagePenalty) - (parseInt(this.payrollReduction))) // eslint-disable-line
+      this.totalReductions = Math.round(parseInt(this.ftePenalty) + parseInt(this.wagePenalty) + (parseInt(this.loan.replace(/,/g,'') - parseInt(this.maxForgivable)))) // eslint-disable-line
       // console.log(this.totalReductions)
       this.totalReductionsResult = this.toCurrency(this.totalReductions)
 
-      console.log('fte penalty ', this.ftePenalty)
-      console.log('payroll reduction ', this.payrollReduction, 'total spent ', this.totalSpent, 'total reductions ', this.totalReductions)
+      this.totalSpent = parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll) // eslint-disable-line
+      console.log(this.totalSpent)
 
-      // if ((this.maxForgivable + this.ftePenalty + this.wagePenalty) < this.loan.replace(/,/g,'')) { // eslint-disable-line
-      if ((this.totalSpent + this.totalReductions) < (this.loan.replace(/,/g,''))) { // eslint-disable-line
-        // this.forgiven = Math.round(this.maxForgivable + this.ftePenalty + this.wagePenalty - (this.loan.replace(/,/g,'') - this.totalSpent)) // eslint-disable-line
-        this.forgiven = Math.round(this.totalSpent + this.totalReductions) // eslint-disable-line
+      if ((this.maxForgivable + this.ftePenalty + this.wagePenalty) < this.loan.replace(/,/g,'')) { // eslint-disable-line
+        this.forgiven = Math.round(this.maxForgivable + this.ftePenalty + this.wagePenalty - (this.loan.replace(/,/g,'') - this.totalSpent)) // eslint-disable-line
         // this.forgivenResult = `$ ${this.forgiven}`
         this.forgivenResult = this.toCurrency(this.forgiven)
       } else {
-        this.forgiven = (this.loan.replace(/,/g,'')) // eslint-disable-line
+        this.forgiven = this.loan.replace(/,/g,'') // eslint-disable-line
         // this.forgivenResult = `$ ${this.forgiven}`
         this.forgivenResult = this.toCurrency(this.forgiven)
       }
 
       // this.repaid = Math.round(this.loan.replace(/,/g,'') - this.forgiven) // eslint-disable-line
-      this.repaid = Math.round(-1 * (this.wagePenalty + this.ftePenalty - (this.payrollReduction))) // eslint-disable-line
+      this.repaid = Math.round(-1 * (this.wagePenalty + this.ftePenalty + (this.loan.replace(/,/g,'') - this.maxForgivable))) // eslint-disable-line
       // this.repaid = Math.round((this.wagePenalty + this.ftePenalty + (this.loan.replace(/,/g,'') - this.maxForgivable))) // eslint-disable-line
       // this.repaidResult = `$ ${this.repaid}`
       this.repaidResult = this.toCurrency(this.repaid)

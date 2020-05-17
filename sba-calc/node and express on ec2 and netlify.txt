@@ -1,0 +1,439 @@
+NODE EXPRESS ON ELASTIC BEANSTALK
+
+
+
+npm install express
+npm install nodemon
+
+
+
+
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+	res.send("Welcome to the home page baby");
+});
+
+const port = process.env.port || 3000;
+app.listen(port, () => {
+	console.log("Wazza");
+});
+
+
+
+	>> nodemon app.js
+
+
+> Elastic Beanstalk
+	- Create New Application
+		application name; description; tags
+
+also > CodePipeline
+	: will build a pipeline such that when there is a change on our project, it propagates
+	to AWS
+
+	> Create Pipeline
+		name; leave role name as is > New service role
+		Source provider: source code repo where you are storing your project
+
+
+
+GIT > create new repo on cli
+	git init
+	git add README.md
+	git commit -m "first commit"
+	git remote add origin https://github.com/username/name.git
+	git push -u origin master
+	
+	> Back to CodePipeline
+		- continue with the source provider on github repo and get master branch
+
+
+Can add a Build Provider (e.g. Jenkins) but if you want to stay thin, 'Skip the build stage'
+
+Deploy Stage : 
+	Deploy provider: Elastic Beanstalk
+	region
+
+	> back to Elastic Beanstalk > 
+		create app and call it same as your code pipeline role / repo
+
+
+> back to Pipeline, in Deploy stage
+	- put elastic beanstalk application name in field Application Name
+	- then for Environment
+		> back to Elastic Beanstalk
+			- Create Environment > Web server environment
+				- Platform: Node.js; App Code: Sample app
+			
+				- get environment name and go back to Deploy stage in Pipeline
+				and put in environment name field
+
+	- Finish creating Pipeline
+
+
+
+> Elastic Beanstalk
+	Configuration > Software > modify
+		Environment Properties: add > port : 8081
+
+
+
+
+
+
+
+
+
+
+
+
+NODE ON AWS EC2
+Launch an EC2 instance and SSH into it.
+	- Now, we can see the Add Tags page. In this section, we have to add at least 
+	single tag using key-value pairs. For example, you can add Key=ServerName and 
+	value=Nodejs_Server	
+
+	- When configuring the security group make sure you open the port on which your 
+	Node application will run
+		- We can also configure these ports after launching the server. 
+		Click on Add Tag button and add 80, 8080, and 22 ports.
+
+	- Create a new key pair and download it on your local machine. You can not generate
+	this key after launching your instance.
+		- If you are using Windows you need to change your .pem key to .ppk format. 
+		You can follow this link to convert your key
+		- https://stackoverflow.com/questions/3190667/convert-pem-to-ppk-file-format
+
+Install Node on EC2 instance.
+	- SSH into instance
+		ssh ec2-user@IP -i file.pem
+
+		OTHER SITE:
+		chmod 400 lightsaber.pem
+		sudo ssh -i lightsaber.pem ubuntu@IP
+
+	Ubuntu:
+	curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+		sudo apt-get install -y nodejs
+
+	or?
+
+	sudo yum update
+	curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+	. ~/.nvm/nvm.sh
+	nvm install 8.12
+
+	- or 
+		sudo apt-get install git
+	
+Copy code on your EC2 instance and install dependencies.
+	But first, you have install git on your instance. Type the following command to 
+	install git on Amazon Linux AMI.
+		sudo yum install -y git
+		git clone https://github.com/abkunal/Chat-App-using-Socket.io.git
+
+	You can now install your node dependencies by navigating to your folder and running the following command
+		npm install
+
+	This is where the Security Group comes in. In the AWS management console, go to 
+	Security Groups, select the one not named ‘default’ (launch-wizard-1 or your 
+	security group name) and edit the Inbound rules.
+		- Add Custom TCP to Port you need
+		Select the security group and from 'Actions' select Edit inbound rules
+			In inbound rules you want to add the following two rules:
+				Type: SSH, Source: Anywhere
+				Type: HTTP Source: Anywhere
+
+Start server to run forever.
+	we will use an npm package called pm2.
+		npm install -g pm2
+	2. Set up pm2 to start the server automatically on server restart.
+		Kill the running node processes (if any) using 
+			killall -9 node
+		pm2 start app.js
+		pm2 save
+		pm2 startup
+			Note that after running the pm2 startup command we get a command 
+			starting with “sudo”.
+
+			Copy that command from sudo till the end of the next line and paste 
+			it in the terminal and press enter.
+	Now your node server is running and is set to start automatically whenever 
+	you restart the EC2 instance.
+
+	Now you can reboot the instance using sudo reboot and connect after 1 min. You 
+	can still see the app is running on port 3000 using:
+		PM2 list
+		# Or
+		PM2 show app 
+
+
+Now, you can use your instance’s IP address and the port on which your server is
+running to see your web application in action.
+
+
+
+
+
+
+
+
+
+EXPRESS - SSL CERTIFICATE TO RUN HTTPS
+- Needed to create a certificate with a Certificate Authority. Many Certificate Authorities 
+were paid but not Let's Encrypt
+
+
+- If you have shell access to your server, it suggests you use certbot.
+
+In the certbot website, I chose:
+	- My HTTP website is running None of the above on Ubuntu 16.04 (xenial) 
+	which was fitting to my case.
+
+	Before starting they want you to be sure to have:
+		comfort with the command line
+		and an HTTP website (API Server in my case)
+		which is online
+		and serving on HTTP port (80)
+		which is hosted on a server
+		which you can access via SSH
+		with the ability to sudo
+		Then just apply the steps on the below:
+
+
+	- Add Certbot PPA
+		You'll need to add the Certbot PPA to your list of repositories. To do so, 
+		run the following commands on the command line on the machine:
+			sudo apt-get update &&
+			sudo apt-get install software-properties-common &&
+			sudo add-apt-repository universe &&
+			sudo add-apt-repository ppa:certbot/certbot &&
+			sudo apt-get update
+	Run this command on the command line on the machine to install Certbot.
+		sudo apt-get install certbot
+
+	Are you ok with temporarily stopping your website?
+		sudo certbot certonly --standalone
+	No, I need to keep my webserver running.
+		sudo certbot certonly --webroot
+
+
+- 4. Installing signed certificate to Express API Server
+	yarn add https
+const https = require('https');
+const fs = require('fs');
+
+const httpsServer = https.createServer({
+  key: fs.readFileSync('/etc/letsencrypt/live/my_api_url/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/my_api_url/fullchain.pem'),
+}, app);
+
+httpsServer.listen(443, () => {
+    console.log('HTTPS Server running on port 443');
+});
+
+	If you also want to maintain HTTP requests among the HTTPS requests, you can 
+	add the following lines, too:
+
+const http = require('http');
+
+// serve the API on 80 (HTTP) port
+const httpServer = http.createServer(app);
+
+httpServer.listen(80, () => {
+    console.log('HTTP Server running on port 80');
+});
+
+
+
+5. Automatic Renewal and Test of the Certificate
+You can test automatic renewal for your certificates by running this command:
+	sudo certbot renew --dry-run
+
+	If you needed to stop your webserver to run Certbot, you'll want to edit the 
+	built-in command to add the --pre-hook and --post-hook flags to stop and start 
+	your web server automatically
+		--pre-hook "service haproxy stop" --post-hook "service haproxy start"
+
+
+If you want to check that you have the top-of-the-line installation, 
+you can head to https://www.ssllabs.com/ssltest/.
+
+
+
+
+
+
+
+
+
+INSTALL NGIX REVERSE PROXY IN UBUNTU
+Create a file called /etc/apt/sources.list.d/nginx.list and add the following lines to it.
+	deb http://nginx.org/packages/ubuntu/ bionic nginx
+	deb-src http://nginx.org/packages/ubuntu/  bionic nginx
+
+Next, add the repository signing key, update your system package index and install 
+the nginx package as follows.
+	$ wget --quiet http://nginx.org/keys/nginx_signing.key && sudo apt-key add nginx_signing.key
+	$ sudo apt update
+	$ sudo apt install nginx
+		OR
+		sudo yum install ngix
+		sudo amazon-linux-extras install nginx1.12
+
+
+After successfully installing Nginx, start it, enable it to auto-start at 
+system boot and check if it is up and running.
+	---------- On Debian/Ubuntu ---------- 
+	$ sudo systemctl status nginx
+	$ sudo systemctl enable nginx
+	$ sudo systemctl status nginx
+
+If you are running a system firewall, you need to open port 80 (HTTP), 443 (HTTPS) and 
+5000 (Node app), which the web server listens on for client connection requests.
+	---------- On Debian/Ubuntu ---------- 
+	$ sudo ufw allow 80/tcp
+	$ sudo ufw allow 443/tcp
+	$ sudo ufw allow 5000/tcp
+	$ sudo ufw reload
+
+
+
+We will be running nginx on port 80 so that it intercepts the requests and forwards them to 
+port 8080 where our node app is running.
+open default nginx configuration file in sites-enabled folder of nginx
+			cd /etc/nginx/sites-enabled
+			Open default file using vim default
+				vim default
+			Delete all the contents of this file and copy this snippet into the file.
+				server {
+  					 listen         80 default_server;
+  					 listen         [::]:80 default_server;
+  					 server_name    localhost;
+  					 root           /usr/share/nginx/html;
+					location / {
+      					 	proxy_pass http://127.0.0.1:8080;
+      					 	proxy_http_version 1.1;
+      						 proxy_set_header Upgrade $http_upgrade;
+      					 	proxy_set_header Connection 'upgrade';
+      					 	proxy_set_header Host $host;
+      						 proxy_cache_bypass $http_upgrade;
+   					}
+					location /admin {
+      					 	proxy_pass http://127.0.0.1:8081;
+      					 	proxy_http_version 1.1;
+      						 proxy_set_header Upgrade $http_upgrade;
+      					 	proxy_set_header Connection 'upgrade';
+      					 	proxy_set_header Host $host;
+      						 proxy_cache_bypass $http_upgrade;
+   					}
+				}
+		sudo service nginx restart
+			OR
+			Test configuration and Reload Nginx and check if OK is the status 
+			from following commands:
+				sudo nginx -t
+				sudo /etc/init.d/nginx reload
+	OR
+Now create a server block configuration file for your Node app under /etc/nginx/conf.d/  OR sudo nano /etc/nginx/nginx.conf
+as shown.
+	$ sudo vim /etc/nginx/conf.d/sysmon.conf 
+Copy and paste the following configuration (change 192.168.43.31 with your server 
+IP and tecmint.lan with your domain name).
+	server {
+  	  listen 80;
+  	  server_name sysmon.tecmint.lan;
+	
+  	  location / {
+  	      proxy_set_header   X-Forwarded-For $remote_addr;
+   	     proxy_set_header   Host $http_host;
+   	     proxy_pass         http://192.168.43.31:5000;
+   	 }
+	}
+	}
+
+	OR
+	server {
+  		 listen         80 default_server;
+  		 listen         [::]:80 default_server;
+  		 server_name    localhost;
+  	 	root           /usr/share/nginx/html;
+  		 location / {
+  		     proxy_pass http://127.0.0.1:3000;
+  		 }
+	}
+
+
+Save the changes and exit the file.
+
+Finally, restart the Nginx service to effect the recent changes.
+	$ sudo systemctl restart nginx
+	OR
+	# systemctl restart nginx
+	
+For your test domain name to work, you need to setup local DNS using the 
+/etc/hosts file, open it and add the line below in it (remember to change 
+192.168.43.31 with your server IP and tecmint.lan with your doamin name as before).
+	192.168.43.31 sysmon.tecmint.lan
+
+
+Set up Nginx to restart automatically if something goes wrong
+	sudo chkconfig nginx on
+
+
+
+Next steps
+You still need to think how to set up a proper domain for your app
+	I like to use AWS Route 53 and Cloudfront CDN to forward the traffic into the EC2 
+	instance. That gives me resilience, free SSLs certificates and HTTPs redirects 
+	without having to worry about further Nginx configurations and management of 
+	certificate on the EC2 instance.
+
+	You need to configure your Nginx proxy headers and learn more about the server and 
+	location blocks configurations.
+
+	You probably want to set up a Git repo with your Nginx configuration files so that 
+	you can edit them in a proper code editor and than just pull their latest versions 
+	into your EC2 instance
+
+	Use a proper SSH client like PuTTY from your local machine. It will be a bit faster 
+	and smoother experience than the web client via AWS Console
+
+	This about the caching strategy for your app
+		https://regbrain.com/article/cache-headers-express-js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

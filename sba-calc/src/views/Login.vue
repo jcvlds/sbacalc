@@ -172,9 +172,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.rounded {
-  border-radius: 10px !important
-}
-</style>

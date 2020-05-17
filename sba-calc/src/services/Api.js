@@ -3,7 +3,8 @@ import axios from 'axios'
 
 export default () => {
   return axios.create({
-    baseURL: 'http://3.93.160.146/'
+    // baseURL: 'http://3.93.160.146/'
+    baseURL: 'https://ppp-api.hco-tech.com/'
     // headers: {
     //   Authorization: ''
     // }
