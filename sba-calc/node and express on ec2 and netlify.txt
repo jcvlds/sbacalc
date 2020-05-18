@@ -35,6 +35,7 @@ also > CodePipeline
 
 	> Create Pipeline
 		name; leave role name as is > New service role
+			AWSCodePipelineServiceRole-us-east-1-ppp-server
 		Source provider: source code repo where you are storing your project
 
 
