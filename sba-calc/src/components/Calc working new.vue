@@ -229,16 +229,6 @@
         </v-tooltip> -->
 
           <v-text-field
-              v-model="totalSpentResult"
-              form="form"
-              label="Portion of total loan amount actually used during covered period"
-              filled
-              class="center-input"
-              readonly
-              >
-          </v-text-field>
-
-          <v-text-field
               v-model="totalNonPayrollResult"
               form="form"
               label="Portion of loan amount spent on non-payroll"
@@ -248,15 +238,15 @@
               >
           </v-text-field>
 
-          <!-- <v-text-field
+          <v-text-field
               v-model="totalReductionsResult"
               form="form"
-              label="Total reductions (FTE + Wage reductions)"
+              label="Total reductions (Payroll + FTE + Wage reductions)"
               filled
               class="center-input"
               readonly
               >
-          </v-text-field> -->
+          </v-text-field>
 
           <div class="d-flex justify-center" style="margin-top: 24em">
             <v-btn
@@ -362,8 +352,6 @@ export default {
     wageReduction: '',
     totalNonPayroll: '',
     totalNonPayrollResult: '',
-    amtAfterWageRed: '',
-    amtAfterWagenFTERed: '',
     maxForgivable: '',
     maxForgivableResult: '',
     payrollReduction: '',
@@ -375,7 +363,6 @@ export default {
     forgiven: '',
     forgivenResult: '',
     totalSpent: '',
-    totalSpentResult: '',
     repaid: '',
     repaidResult: '',
     repaidNow: '',
@@ -433,19 +420,12 @@ export default {
         this.maxForgivableResult = this.toCurrency(this.maxForgivable)
       }
 
+      this.ftePenalty = -1 * (parseFloat(this.fteReduction / 100)) * (parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll)) // eslint-disable-line
+      // console.log(this.ftePenalty)
       this.wagePenalty = -1 * parseInt(this.wageReduction.replace(/,/g,'')) // eslint-disable-line
 
       this.totalSpent = parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll) // eslint-disable-line
-      this.totalSpentResult = this.toCurrency(this.totalSpent)
-      // console.log(this.totalSpent)
-
-      this.amtAfterWageRed = this.totalSpent + this.wagePenalty // eslint-disable-line
-      console.log('after wage: ', this.amtAfterWageRed)
-
-      // this.ftePenalty = -1 * (parseFloat(this.fteReduction / 100)) * (parseInt(this.payroll.replace(/,/g,'')) + parseInt(this.totalNonPayroll)) // eslint-disable-line
-      this.ftePenalty = -1 * (parseFloat(this.fteReduction / 100)) * (parseInt(this.amtAfterWageRed))
-      this.amtAfterWagenFTERed = parseInt(this.amtAfterWageRed) + this.ftePenalty
-      console.log('after fte: ', this.amtAfterWagenFTERed)
+      console.log(this.totalSpent)
 
       const percent = parseInt(this.payroll.replace(/,/g,'')) / this.totalSpent // eslint-disable-line
       if (percent >= .75) { // eslint-disable-line
@@ -455,42 +435,36 @@ export default {
         this.payrollReduction = (-1 * (parseInt(this.payroll.replace(/,/g,'') / .75) - this.totalSpent)) // eslint-disable-line
         this.payrollReductionResult = this.toCurrency(this.payrollReduction)
       }
-
+      console.log('percent ', percent)
+      console.log('payroll reduction ', this.payrollReduction)
       // this.totalReductions = Math.round(parseInt(this.ftePenalty) + parseInt(this.wagePenalty) + (parseInt(this.loan.replace(/,/g,'') - parseInt(this.maxForgivable)))) // eslint-disable-line
       this.totalReductions = Math.round(parseInt(this.ftePenalty) + parseInt(this.wagePenalty) - (parseInt(this.payrollReduction))) // eslint-disable-line
       // console.log(this.totalReductions)
       this.totalReductionsResult = this.toCurrency(this.totalReductions)
 
+      console.log('fte penalty ', this.ftePenalty)
+      console.log('payroll reduction ', this.payrollReduction, 'total spent ', this.totalSpent, 'total reductions ', this.totalReductions)
+
       // if ((this.maxForgivable + this.ftePenalty + this.wagePenalty) < this.loan.replace(/,/g,'')) { // eslint-disable-line
-      // if ((this.totalSpent + this.totalReductions) < (this.loan.replace(/,/g,''))) { // eslint-disable-line
-      const minAmt = Math.min(this.amtAfterWagenFTERed, this.loan.replace(/,/g,''), this.maxForgivable) // eslint-disable-line
-      this.forgiven = minAmt
-      this.forgivenResult = this.toCurrency(this.forgiven)
-      // if (this.amtAfterWagenFTERed) { // eslint-disable-line
-      // this.forgiven = Math.round(this.maxForgivable + this.ftePenalty + this.wagePenalty - (this.loan.replace(/,/g,'') - this.totalSpent)) // eslint-disable-line
-      // this.forgiven = Math.round(this.totalSpent + this.totalReductions) // eslint-disable-line
-      // this.forgiven = Math.round(this.) // eslint-disable-line
-      // this.forgivenResult = `$ ${this.forgiven}`
-      // this.forgivenResult = this.toCurrency(this.forgiven)
-      // } else {
-      // this.forgiven = (this.loan.replace(/,/g,'')) // eslint-disable-line
-      // this.forgivenResult = `$ ${this.forgiven}`
-      // this.forgivenResult = this.toCurrency(this.forgiven)
-      // }
+      if ((this.totalSpent + this.totalReductions) < (this.loan.replace(/,/g,''))) { // eslint-disable-line
+        // this.forgiven = Math.round(this.maxForgivable + this.ftePenalty + this.wagePenalty - (this.loan.replace(/,/g,'') - this.totalSpent)) // eslint-disable-line
+        this.forgiven = Math.round(this.totalSpent + this.totalReductions) // eslint-disable-line
+        // this.forgivenResult = `$ ${this.forgiven}`
+        this.forgivenResult = this.toCurrency(this.forgiven)
+      } else {
+        this.forgiven = (this.loan.replace(/,/g,'')) // eslint-disable-line
+        // this.forgivenResult = `$ ${this.forgiven}`
+        this.forgivenResult = this.toCurrency(this.forgiven)
+      }
 
       // this.repaid = Math.round(this.loan.replace(/,/g,'') - this.forgiven) // eslint-disable-line
-      // this.repaid = Math.round(-1 * (this.wagePenalty + this.ftePenalty - (this.payrollReduction))) // eslint-disable-line
-      this.repaid = Math.round((this.totalSpent - this.forgiven)) // eslint-disable-line
+      this.repaid = Math.round(-1 * (this.wagePenalty + this.ftePenalty - (this.payrollReduction))) // eslint-disable-line
       // this.repaid = Math.round((this.wagePenalty + this.ftePenalty + (this.loan.replace(/,/g,'') - this.maxForgivable))) // eslint-disable-line
       // this.repaidResult = `$ ${this.repaid}`
       this.repaidResult = this.toCurrency(this.repaid)
 
       this.repaidNow = Math.round(this.loan.replace(/,/g,'') - this.forgiven - this.repaid) // eslint-disable-line
-      if (this.repaidNow < 0) {
-        this.repaidNowResult = this.toCurrency(0)
-      } else {
-        this.repaidNowResult = this.toCurrency(this.repaidNow)
-      }
+      this.repaidNowResult = this.toCurrency(this.repaidNow)
 
       this.snackbar = !this.snackbar
     },
